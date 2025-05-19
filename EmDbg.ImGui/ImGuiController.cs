@@ -235,7 +235,7 @@ namespace EmDbg.ImGuiUI
 
         private byte[] GetEmbeddedResourceBytes(string resourceName)
         {
-            Assembly assembly = typeof(ImGuiRenderer).Assembly;
+            Assembly assembly = typeof(ImGuiController).Assembly;
             using (Stream s = assembly.GetManifestResourceStream(resourceName))
             {
                 byte[] ret = new byte[s.Length];
