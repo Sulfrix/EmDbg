@@ -3,6 +3,7 @@ using NeighborSharp;
 using NeighborSharp.Types;
 using System.Diagnostics;
 using System.Numerics;
+using System.Runtime.InteropServices;
 using Veldrid;
 using Veldrid.Sdl2;
 using Veldrid.StartupUtilities;
@@ -28,10 +29,20 @@ namespace EmDbg.ImGuiUI
 
         static void Main(string[] args)
         {
+
+            var backend = VeldridStartup.GetPlatformDefaultBackend();
+            
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                // I'm just going to force Vulkan on Windows, trying to figure out DirectX shaders was too annoying.
+                backend = GraphicsBackend.Vulkan;
+            }
+            
             // Create all the objects necessary for ImGui
             VeldridStartup.CreateWindowAndGraphicsDevice(
                 new WindowCreateInfo(50, 50, 1280, 720, WindowState.Normal, "EmDbg"),
                 new GraphicsDeviceOptions(true, null, true, ResourceBindingModel.Improved, true, true),
+                backend,
                 out _window,
                 out _gd);
             _cl = _gd.ResourceFactory.CreateCommandList();
