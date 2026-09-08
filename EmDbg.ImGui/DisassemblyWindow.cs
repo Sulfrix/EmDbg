@@ -6,7 +6,7 @@ namespace EmDbg.ImGuiUI;
 
 public class DisassemblyWindow
 {
-    public static uint startAddress = 0;
+    public static uint startAddress = 0x80000000;
 
     public enum InstructionHighlightState
     {

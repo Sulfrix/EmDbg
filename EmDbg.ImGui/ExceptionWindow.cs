@@ -17,7 +17,7 @@ public class ExceptionWindow
     public static void ShowWindow()
     {
         if (prevException != null)
-        {
+        {   
             if (ImGui.Begin("Exception"))
             {
                 ImGui.Text("An exception has occurred!");
@@ -33,6 +33,15 @@ public class ExceptionWindow
                 if (ImGui.Button("Dismiss"))
                 {
                     prevException = null;
+                }
+                ImGui.SameLine();
+                if (ImGui.Button("Step Over"))
+                {
+                    var ctx = MemoryAccess.currentDebugger.GetThreadContext(prevException.thread);
+                    ctx.pc += 4;
+                    MemoryAccess.currentDebugger.SetThreadContext(prevException.thread, ctx);
+                    DisassemblyWindow.highlightState = DisassemblyWindow.InstructionHighlightState.BREAK;
+                    DisassemblyWindow.highlightAddr = ctx.pc;
                 }
             }
         }
