@@ -26,6 +26,8 @@ namespace EmDbg.ImGuiUI
         private static Xbox360? _console;
         private static XboxDebugger? _debugger;
         private static bool _is_connected;
+        
+        public static List<Exception> Exceptions = new List<Exception>();
 
         static void Main(string[] args)
         {
@@ -41,7 +43,7 @@ namespace EmDbg.ImGuiUI
             // Create all the objects necessary for ImGui
             VeldridStartup.CreateWindowAndGraphicsDevice(
                 new WindowCreateInfo(50, 50, 1280, 720, WindowState.Normal, "EmDbg"),
-                new GraphicsDeviceOptions(true, null, true, ResourceBindingModel.Improved, true, true),
+                new GraphicsDeviceOptions(false, null, true, ResourceBindingModel.Improved, true, true),
                 backend,
                 out _window,
                 out _gd);
@@ -97,28 +99,64 @@ namespace EmDbg.ImGuiUI
             // connect to the console
             _console = new(ip);
             _debugger = new(_console);
+            MemoryAccess.currentDebugger = _debugger;
             _is_connected = true;
             // set up console logging
             _debugger.ReportDebugLogs = true;
             _debugger.cbDebugString += ConsoleWindow.HandleDebugMessage;
             _debugger.cbExecutionStateChange += StatusWindow.HandleExecutionState;
+            _debugger.cbExceptionHit += ExceptionWindow.OnException;
             // subscribe to the notifications
             _debugger.SubscribeNotifications(true);
         }
 
         private static void SubmitUI()
         {
-            //ImGui.ShowDemoWindow();
+            ImGui.DockSpaceOverViewport(0);
+            ImGui.ShowDemoWindow();
 
             // display connection discovery dialog
-            if (!_is_connected && ConnectWindow.ShowWindow())
-                ConnectToXbox(ConnectWindow.SelectedIP());
+            try
+            {
+                if (!_is_connected && ConnectWindow.ShowWindow())
+                    ConnectToXbox(ConnectWindow.SelectedIP());
+            }
+            catch (Exception e)
+            {
+                Exceptions.Add(e);
+            }
+            
 
             // display dialogs for when the console is connected
             if (_is_connected && _debugger != null)
             {
                 StatusWindow.ShowWindow(_debugger);
                 ConsoleWindow.ShowWindow();
+                ExceptionWindow.ShowWindow();
+                DisassemblyWindow.ShowWindow();
+                MemoryViewWindow.ShowWindow();
+            }
+
+            if (Exceptions.Count > 0)
+            {
+                ImGui.OpenPopup("Error");
+                bool _ = true;
+                if (ImGui.BeginPopupModal("Error", ref _, ImGuiWindowFlags.AlwaysAutoResize))
+                {
+                    ImGui.Text(Exceptions.First().GetType().Name);
+                    ImGui.Text(Exceptions.First().Message);
+                    if (ImGui.CollapsingHeader("Callstack"))
+                    {
+                        ImGui.Text(Exceptions.First().StackTrace);
+                    }
+
+                    if (ImGui.Button("OK"))
+                    {
+                        Exceptions.RemoveAt(0);
+                        ImGui.CloseCurrentPopup();
+                    }
+                    ImGui.EndPopup();
+                }
             }
         }
     }

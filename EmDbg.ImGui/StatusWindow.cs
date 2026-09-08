@@ -5,6 +5,7 @@ using System.Linq;
 using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
+using EmDbg.Types;
 
 namespace EmDbg.ImGuiUI
 {
@@ -20,12 +21,12 @@ namespace EmDbg.ImGuiUI
             _is_running = running;
             _pending_change = true;
         }
+        
+        static string XamLoaderTerminateTitleAddr = "82c4bccc";
 
         public static bool ShowWindow(XboxDebugger debugger)
         {
-            ImGui.SetNextWindowPos(new Vector2(5, 5), ImGuiCond.Always);
-            ImGui.SetNextWindowBgAlpha(0.35f);
-            ImGui.Begin("Status", ImGuiWindowFlags.NoDecoration | ImGuiWindowFlags.NoNav | ImGuiWindowFlags.NoMove | ImGuiWindowFlags.AlwaysAutoResize);
+            ImGui.Begin("Status", ImGuiWindowFlags.AlwaysAutoResize);
             
             // fetch console status if we need to
             if (_pending_change)
@@ -38,6 +39,15 @@ namespace EmDbg.ImGuiUI
             ImGui.Text($"Console: {_identification}");
             ImGui.Text($"Title: {_running_title}");
             ImGui.Text($"State: {(_is_running ? "Running" : "Paused")}");
+            ImGui.InputText("XamLoaderTerminateTitle", ref XamLoaderTerminateTitleAddr, 8);
+            if (ImGui.Button("Terminate"))
+            {
+                var ctx = debugger.GetThreadContext(0xF9000000);
+                ctx.pc = Convert.ToUInt32(XamLoaderTerminateTitleAddr, 16);
+                debugger.SetThreadContext(0xF9000000, ctx);
+                debugger.ResumeExecution();
+            }
+            
 
             // pause/resume button
             if (ImGui.Button(_is_running ? "Pause" : "Resume"))

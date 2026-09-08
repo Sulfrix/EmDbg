@@ -29,6 +29,7 @@ namespace EmDbg
         public ExceptionHit? cbExceptionHit;
         public ExecutionStateChange? cbExecutionStateChange;
         public Rebooting? cbRebooting;
+        
 
         // options
         public bool ReportDebugLogs = true;
