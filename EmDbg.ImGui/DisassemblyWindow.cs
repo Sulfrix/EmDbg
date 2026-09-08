@@ -20,7 +20,7 @@ public class DisassemblyWindow
 
     public static void ShowWindow()
     {
-        if (ImGui.Begin("Disassembly", ImGuiWindowFlags.NoScrollbar))
+        if (ImGui.Begin("Disassembly", ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.MenuBar))
         {
             if (ImGui.BeginMenuBar())
             {

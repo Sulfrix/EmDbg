@@ -2,7 +2,7 @@
 
 This is a very work in progress project, it is not ready for general usage just yet.
 
-EmDbg is a work-in-progress debugging client/library for modded Xbox 360 consoles, using the [NeighborSharp](https://github.com/InvoxiPlayGames/NeighborSharp) library, written in C# .NET 6.0.
+EmDbg is a work-in-progress debugging client/library for modded Xbox 360 consoles, using the [NeighborSharp](https://github.com/InvoxiPlayGames/NeighborSharp) library, written in C# .NET 8.
 
 A WinForms-based GUI frontend is included, and a Dear ImGui-based GUI frontend is in the works.
 
@@ -31,7 +31,7 @@ A WinForms-based GUI frontend is included, and a Dear ImGui-based GUI frontend i
 ## Building
 
 1. Clone the repo via `git clone https://github.com/InvoxiPlayGames/EmDbg.git --recursive`
-2. Open the solution file in Visual Studio (2022 ideally, but 2019 with the .NET 6.0 SDK should work)
+2. Open the solution file in Visual Studio (2022 ideally, but 2019 with the .NET 8.0 SDK should work)
 3. Build/run the project
 
 Dependencies should be automatically downloaded via NuGet.
