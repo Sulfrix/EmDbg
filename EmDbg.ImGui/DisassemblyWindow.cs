@@ -1,4 +1,5 @@
 using System.Numerics;
+using EmDbg.Types;
 using ImGuiNET;
 
 namespace EmDbg.ImGuiUI;
@@ -18,12 +19,24 @@ public class DisassemblyWindow
 
     private static string UIJumpAddr = "80000000";
 
+    public static List<uint> tempBreakpoints = new();
+
     public static void ShowWindow()
     {
         if (ImGui.Begin("Disassembly", ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.MenuBar))
         {
             if (ImGui.BeginMenuBar())
             {
+                if (highlightState == InstructionHighlightState.BREAK)
+                {
+                    if (ImGui.MenuItem("Step"))
+                    {
+                        MemoryAccess.currentDebugger.ExecuteBreakpoint(highlightAddr + 4);
+                        tempBreakpoints.Add(highlightAddr + 4);
+                        MemoryAccess.currentDebugger.ResumeExecution();
+                        highlightState = InstructionHighlightState.NONE;
+                    }
+                }
                 if (ImGui.BeginMenu("Jump"))
                 {
                     ImGui.InputText("Address", ref UIJumpAddr, 8);
@@ -64,7 +77,7 @@ public class DisassemblyWindow
                 {
                     var addr = startAddress + i * 4;
                     var data = MemoryAccess.GetMemory((uint)addr, 4);
-                    
+                    ImGui.PushID(addr.ToString("X"));
                     ImGui.TableNextRow();
                     ImGui.TableSetColumnIndex(0);
                     var start = ImGui.GetCursorScreenPos();
@@ -78,9 +91,40 @@ public class DisassemblyWindow
                         drawlist.AddRectFilled(new Vector2(start.X, start.Y), new Vector2(contentRegionAvail.X+start.X-10, start.Y+ImGui.GetTextLineHeight()), color);
                     }
 
+                    var breakPointPos = ImGui.GetCursorScreenPos();
                     if (ImGui.InvisibleButton("Breakpoint", new Vector2(ImGui.GetTextLineHeight())))
                     {
+                        try
+                        {
+                            if (MemoryAccess.currentDebugger.IsBreakpointed(addr))
+                            {
+                                MemoryAccess.currentDebugger.ClearExecuteBreakpoint(addr);
+                            }
+                            else
+                            {
+                                MemoryAccess.currentDebugger.ExecuteBreakpoint(addr);
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            Program.Exceptions.Add(e);
+                        }
                         
+                    }
+
+                    uint breakpointOpacity = 0;
+                    if (MemoryAccess.currentDebugger.IsBreakpointed(addr))
+                    {
+                        breakpointOpacity = 255;
+                    } else if (ImGui.IsItemHovered())
+                    {
+                        breakpointOpacity = 80;
+                    }
+
+                    if (breakpointOpacity > 0)
+                    {
+                        var col = 0x006060ff | (breakpointOpacity << 24);
+                        drawlist.AddCircleFilled(breakPointPos + new Vector2(ImGui.GetTextLineHeight()/2), ImGui.GetTextLineHeight()/2, col);
                     }
                     ImGui.TableSetColumnIndex(1);
                     ImGui.Text(addr.ToString("X8"));
@@ -102,11 +146,29 @@ public class DisassemblyWindow
                             ImGui.Text("Error");
                         }
                     }
+                    ImGui.PopID();
                 }
                 
                 ImGui.EndTable();
             }
         }
         ImGui.End();
+    }
+
+    public static void BreakpointHit(Breakpoint bp)
+    {
+        highlightState = InstructionHighlightState.BREAK;
+        highlightAddr = bp.breakAddr;
+        if (tempBreakpoints.Contains(bp.breakAddr))
+        {
+            tempBreakpoints.Remove(bp.breakAddr);
+            try
+            {
+                MemoryAccess.currentDebugger.ClearExecuteBreakpoint(bp.breakAddr);
+            } catch (Exception e)
+            {
+                Program.Exceptions.Add(e);
+            }
+        }
     }
 }

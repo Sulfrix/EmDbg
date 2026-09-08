@@ -55,7 +55,11 @@ namespace EmDbg.ImGuiUI
                 if (_is_running)
                     debugger.StopExecution();
                 else
+                {
                     debugger.ResumeExecution();
+                    DisassemblyWindow.highlightState = DisassemblyWindow.InstructionHighlightState.NONE;
+                }
+                    
             }
 
             ImGui.End();

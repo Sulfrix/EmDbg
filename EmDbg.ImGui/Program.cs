@@ -106,6 +106,7 @@ namespace EmDbg.ImGuiUI
             _debugger.cbDebugString += ConsoleWindow.HandleDebugMessage;
             _debugger.cbExecutionStateChange += StatusWindow.HandleExecutionState;
             _debugger.cbExceptionHit += ExceptionWindow.OnException;
+            _debugger.cbBreakpointHit += DisassemblyWindow.BreakpointHit;
             // subscribe to the notifications
             _debugger.SubscribeNotifications(true);
         }

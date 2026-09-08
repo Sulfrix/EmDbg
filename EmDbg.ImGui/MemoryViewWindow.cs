@@ -8,7 +8,7 @@ public class MemoryViewWindow
     public static uint startAddress = 0;
 
 
-    private static string UIJumpAddr = "80000000";
+    private static string UIJumpAddr = "40000000";
 
     public static void ShowWindow()
     {
