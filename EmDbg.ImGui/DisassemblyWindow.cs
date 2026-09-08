@@ -31,8 +31,11 @@ public class DisassemblyWindow
                 {
                     if (ImGui.MenuItem("Step"))
                     {
-                        MemoryAccess.currentDebugger.ExecuteBreakpoint(highlightAddr + 4);
-                        tempBreakpoints.Add(highlightAddr + 4);
+                        if (!MemoryAccess.currentDebugger.IsBreakpointed(highlightAddr + 4))
+                        {
+                            MemoryAccess.currentDebugger.ExecuteBreakpoint(highlightAddr + 4);
+                            tempBreakpoints.Add(highlightAddr + 4);
+                        }
                         MemoryAccess.currentDebugger.ResumeExecution();
                         highlightState = InstructionHighlightState.NONE;
                     }
@@ -157,6 +160,10 @@ public class DisassemblyWindow
 
     public static void BreakpointHit(Breakpoint bp)
     {
+        if (bp.breakAddr < startAddress || bp.breakAddr > startAddress+(8*4))
+        {
+            startAddress = bp.breakAddr - 8;
+        }
         highlightState = InstructionHighlightState.BREAK;
         highlightAddr = bp.breakAddr;
         if (tempBreakpoints.Contains(bp.breakAddr))
